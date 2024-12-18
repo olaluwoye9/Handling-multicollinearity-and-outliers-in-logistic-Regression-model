@@ -53,17 +53,17 @@ Vol (Volume of air inspired)
 Rate (Inspiration rate)
 The predictors are log-transformed to improve model stability.
 
-Key Outputs
+## Key Outputs
 The script generates:
 
-Beta Coefficients: Coefficients for MLE, ridge, Liu, and robust methods.
-Mean Squared Error (MSE): Performance metric for each method.
-Shrinkage Results: Ridge and Liu estimators compared to robust solutions.
-Robustness Analysis: Influence of outliers and multicollinearity.
-A tabular summary of results is printed to the console.
+1. Beta Coefficients: Coefficients for MLE, ridge, Liu, and robust methods.
+2. Mean Squared Error (MSE): Performance metric for each method.
+3. Shrinkage Results: Ridge and Liu estimators compared to robust solutions.
+4. Robustness Analysis: Influence of outliers and multicollinearity.
 
-How to Run the Code
-Load the required libraries.
-Ensure the Finney dataset is loaded from the RobStatTM package.
-Copy and paste the code into an R script file.
-Run the script in RStudio or any R environment.
+
+## How to Run the Code
+1. Load the required libraries.
+2. Ensure the Finney dataset is loaded from the RobStatTM package.
+3. Copy and paste the code into an R script file.
+4. Run the script in RStudio or any R environment.
