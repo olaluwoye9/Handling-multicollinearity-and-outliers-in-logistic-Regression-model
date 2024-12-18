@@ -4,46 +4,47 @@ This project demonstrates robust logistic regression using different estimators 
 ## Overview of the Code
 The code estimates logistic regression coefficients under conditions of multicollinearity and outliers using iterative and robust methods. Key steps include:
 
-**Data Preparation
+1. **Data Preparation**
+-Standardizing the regressors using scale()
+-Creating the response (y) and predictor (X) matrices
 
-Standardizing the regressors using scale()
-Creating the response (y) and predictor (X) matrices
-Initial Estimation
+2. **Initial Estimation**
+- Obtaining the first beta estimates using glm with a logit link
 
-Obtaining the first beta estimates using glm with a logit link
-Iterative Estimation
+3. **Iterative Estimation**
+- Iteratively solving for the beta coefficients using weighted least squares (glm.fit)
+- A stopping condition based on tolerance (tol) ensures convergence
 
-Iteratively solving for the beta coefficients using weighted least squares (glm.fit)
-A stopping condition based on tolerance (tol) ensures convergence
-Shrinkage Methods
+4. **Shrinkage Methods**
+- Ridge Regression
+- Liu Estimator
+- Robust Kibria-Lukman estimator
 
-Ridge Regression
-Liu Estimator
-Robust Kibria-Lukman estimator
-Robust Methods
+5. **Robust Methods**
+-Bianco-Yohai (BY) Estimator
+-Conditionally unbiased bounded influence (CE) estimator
 
-Bianco-Yohai (BY) Estimator
-Conditionally unbiased bounded influence (CE) estimator
-Performance Metrics
+6. **Performance Metrics**
+- Mean Squared Error (MSE)
+- Variance and condition index calculations
 
-Mean Squared Error (MSE)
-Variance and condition index calculations
-Comparison of Results
+7. **Comparison of Results**
+-Comparing estimates from MLE, Ridge, Liu, and robust methods
+- Outputs a summary table of coefficients and MSE values
 
-Comparing estimates from MLE, Ridge, Liu, and robust methods
-Outputs a summary table of coefficients and MSE values
-Dependencies
+## Dependencies
 The code uses the following R libraries:
 
 RobStatTM: Provides robust statistics tools
 robcbi: Supports conditionally unbiased estimators
-To install them, run:
+**To install them, run:**
 
 R
 Copy code
 install.packages("RobStatTM")  
 install.packages("robcbi")  
-Data Used
+
+## Data Used
 The Finney dataset is used in this analysis:
 
 Response Variable (Resp)
