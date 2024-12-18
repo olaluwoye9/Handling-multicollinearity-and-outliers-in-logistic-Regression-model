@@ -1,103 +1,68 @@
-rm(list = ls())
-library(RobStatTM)
-library(robcbi)
-data(Finney)
-Vol<-Finney$Vol
-Rate<-Finney$Rate
-y<-Finney$Resp
-x1<-log(Vol); x2<- log(Rate)
-X=cbind(x1,x2)
-dd=data.frame(y,X)#the standardized dataset
-n=nrow(dd)
-p=ncol(dd)
-X=as.matrix(dd[,2:p])#creating the matrix x
-I=diag(rep(1,p-1))
-X=scale(X)#standardizing the regressors
-y=dd$y#y
-dd=data.frame(y,X)#the standardized dataset
-maxIter=100;tol=1E-7;#maimum iteration and tolerance
-b=matrix(0,nrow=ncol(X),ncol=maxIter)#initializing the beta values
-#X <- cbind(X) # add constant
-b[,1]=glm(y~.-1,family=binomial(link="logit"),data=dd,maxit=10000)$coefficients#first beta values
+# Logistic Regression with Robust Estimators in R
+This project demonstrates robust logistic regression using different estimators to handle multicollinearity and outliers. The estimators include ridge regression, Liu estimator, and robust variants such as Bianco-Yohai and conditionally unbiased bounded influence estimators.
 
-for(i in 2:maxIter){
-  
-  eta=X%*%(b[,i-1])#preceeding beta
-  pi=1/(1+exp(-eta))
-  nu=as.vector(pi*(1-pi)) 
-  z=(eta+(y-pi)/nu)
-  b[,i]=glm.fit(X,z,nu,intercept=F)$coef#final beta for the ith iteration
-  
-  if(max(abs(b[,i]-b[,i-1])/(abs(b[i-1])+0.01*tol))<tol)#condition for convergence as close as possible to zero
-    break
-}
-if (i>maxIter) warning('max iteration exceeded')
-V=t(X)%*%diag(nu)%*%X
-vb=solve(t(X)%*%diag(nu)%*%X)
-coef=b[,i]
-var=vb
-m=V
-e=eigen(m)$values
-  CI=max(e)/min(e)#condition index
-  Q=as.matrix(eigen(m)$vectors)
-  amle=t(Q)%*%coef
-  d1=max(c(0,abs(min(((coef^2)))/((1/e)+coef^2))))
-    d=max(c(0,abs(min(((coef^2-1)))/((1/e)+coef^2))))
-  #k1=d1
-  #k1=sqrt(min(1/(coef^2)))
-  k1=((p/sum(coef^2)))
-  #ki=diag(1/(e/(1+2*e*coef^2)))
-  ki=e/(1+2*e*(coef^2))
-  
-  k2=max(0,min(ki))
-  MM=logregBY(X, y, intercept=0)$coefficients
-  #MMM=logregWBY(X, y, intercept = 0, const = 0.5, kmax = 1000, maxhalf = 10)$coefficients
-  MMM=cubinf(X,y, family=binomial, control=list(ufact=3.2), intercept=FALSE)$coefficients
-  d1m=max(c(0,abs(min(((MM^2)))/((1/e)+MM^2))))
-  d1mm=max(c(0,abs(min(((MMM^2)))/((1/e)+MMM^2))))
+## Overview of the Code
+The code estimates logistic regression coefficients under conditions of multicollinearity and outliers using iterative and robust methods. Key steps include:
 
-  kin=e/(1+2*e*(coef^2))
-  #k1m=sqrt(min(1/(MM^2)))
-  #k1m=max(c(0,abs(min(((MM^2)))/((1/e)+MM^2))))
-  k1m=((p/sum(MM^2)))
-  k1mm=((p/sum(MMM^2)))
-  k2m=max(0,min(kin))
-  #ridge1=solve(V+k*I)%*%V%*%coef
-  ridge2=solve(V+k1*I)%*%V%*%coef
-  ridgem=solve(V+k1m*I)%*%V%*%MM
-  ridgemm=solve(V+k1mm*I)%*%V%*%MMM
+**Data Preparation
 
-  
-  liu=solve(V+I)%*%(V+d1*I)%*%coef
-  lium=solve(V+I)%*%(V+d1m*I)%*%MM
-liumm=solve(V+I)%*%(V+d1mm*I)%*%MMM
-   
-  kl1=solve(V+k1*I)%*%(V-k1*I)%*%coef
-  kl2=solve(V+k2*I)%*%(V-k2*I)%*%coef
-  kl2m=solve(V+k1*I)%*%(V-k1*I)%*%MM
+Standardizing the regressors using scale()
+Creating the response (y) and predictor (X) matrices
+Initial Estimation
 
+Obtaining the first beta estimates using glm with a logit link
+Iterative Estimation
 
+Iteratively solving for the beta coefficients using weighted least squares (glm.fit)
+A stopping condition based on tolerance (tol) ensures convergence
+Shrinkage Methods
 
-mmle=sum(1/e)
+Ridge Regression
+Liu Estimator
+Robust Kibria-Lukman estimator
+Robust Methods
 
-mseridge=sum(e/((e+k1)^2))+(k1^2)*sum((coef^2)/((e+k1)^2))
-mseridgem=sum(e/((e+k1m)^2))+(k1m^2)*sum((MM^2)/((e+k1m)^2))
-mseridgemm=sum(e/((e+k1mm)^2))+(k1mm^2)*sum((MMM^2)/((e+k1mm)^2))
+Bianco-Yohai (BY) Estimator
+Conditionally unbiased bounded influence (CE) estimator
+Performance Metrics
 
+Mean Squared Error (MSE)
+Variance and condition index calculations
+Comparison of Results
 
+Comparing estimates from MLE, Ridge, Liu, and robust methods
+Outputs a summary table of coefficients and MSE values
+Dependencies
+The code uses the following R libraries:
 
-mseliu=sum(((e+d1)^2)/(e*(e+1)^2)+(((d1-1)^2)*sum((coef^2)/(e+1)^2)))
-mselium=sum(((e+d1m)^2)/(e*(e+1)^2)+(((d1m-1)^2)*sum((MM^2)/(e+1)^2)))
-mseliumm=sum(((e+d1mm)^2)/(e*(e+1)^2)+(((d1mm-1)^2)*sum((MMM^2)/(e+1)^2)))
+RobStatTM: Provides robust statistics tools
+robcbi: Supports conditionally unbiased estimators
+To install them, run:
 
+R
+Copy code
+install.packages("RobStatTM")  
+install.packages("robcbi")  
+Data Used
+The Finney dataset is used in this analysis:
 
+Response Variable (Resp)
+Predictor Variables:
+Vol (Volume of air inspired)
+Rate (Inspiration rate)
+The predictors are log-transformed to improve model stability.
 
-tab=cbind(coef,liu,lium,liumm,ridge2,ridgem,ridgemm)
-tab=t(tab)
-t2=c(mmle,mseliu,mselium,mseliumm,mseridge,mseridgem,mseridgemm)
-tab=cbind(tab,t2)
-rownames(tab)=c('MLE','LIU','RobustLIU','liuwby','RIDGEK1','Robustridge','ridgewby')
-colnames(tab)=c('X1','X2','MSE')
-tab
-t3=c(d1,d1m,d1mm,k1,k1m,k1mm)
-t3
+Key Outputs
+The script generates:
+
+Beta Coefficients: Coefficients for MLE, ridge, Liu, and robust methods.
+Mean Squared Error (MSE): Performance metric for each method.
+Shrinkage Results: Ridge and Liu estimators compared to robust solutions.
+Robustness Analysis: Influence of outliers and multicollinearity.
+A tabular summary of results is printed to the console.
+
+How to Run the Code
+Load the required libraries.
+Ensure the Finney dataset is loaded from the RobStatTM package.
+Copy and paste the code into an R script file.
+Run the script in RStudio or any R environment.
